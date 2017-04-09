@@ -101,7 +101,7 @@ namespace CryptoWizard.Services
       return result;
     }
     /// <summary>
-    /// This method calculate inverse element with the help of advanced algorithm by Evklid
+    /// This method calculate inverse element with help of advanced algorithm by Evklid
     /// </summary>
     /// <param name="p">Mod</param>
     /// <param name="value">Value</param>   
