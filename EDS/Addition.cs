@@ -18,7 +18,7 @@ namespace CryptoWizard.Services
     /// <param name="a">Argument of equation</param>
     /// <param name="p">Mod</param>
     /// <returns>Return result of addition</returns>
-    public IEnumerable<int> AdditionResult(int x1, int y1, int x2, int y2, double a, int p)
+    public IEnumerable<long> AdditionResult(long x1, long y1, long x2, long y2, double a, long p)
     {
       return (x1 != x2) && (y1 != y2) ? CalculateIfPointsAreNotEqual(x1, y1, x2, y2, p) : CalculateIfPointsAreEqual(x1, y1, x2, y2, a, p);
     }
@@ -32,7 +32,7 @@ namespace CryptoWizard.Services
     /// <param name="a">Argument of equation</param>
     /// <param name="p">Mod</param>
     /// <returns>Return the point</returns>
-    private IEnumerable<int> CalculateIfPointsAreEqual(int x1, int y1, int x2, int y2, double a, int p)
+    private IEnumerable<long> CalculateIfPointsAreEqual(long x1, long y1, long x2, long y2, double a, long p)
     {
       var lambda1 = 3 * x1 * x1 + a;
       var lambda2 = 2 * y1;
@@ -46,7 +46,7 @@ namespace CryptoWizard.Services
       }
       var lambda = lambda1 * lambda2;
       lambda = (lambda < 0) ? (p + lambda) % p : lambda % p;
-      return GetPoint((int)lambda, x1, x2, y1, p);
+      return GetPoint((long)lambda, x1, x2, y1, p);
     }
     /// <summary>
     /// This method calculate the point if current points are not equal
@@ -57,7 +57,7 @@ namespace CryptoWizard.Services
     /// <param name="y2">The second point</param>
     /// <param name="p">Mod</param>
     /// <returns>Return the point</returns>
-    private IEnumerable<int> CalculateIfPointsAreNotEqual(int x1, int y1, int x2, int y2, int p)
+    private IEnumerable<long> CalculateIfPointsAreNotEqual(long x1, long y1, long x2, long y2, long p)
     {
       var lambda1 = y2 - y1;
       var lambda2 = x2 - x1;
@@ -79,9 +79,9 @@ namespace CryptoWizard.Services
     /// <param name="p">Mod</param>
     /// <param name="value">Value</param>   
     /// <returns>Return inverse value</returns>
-    private int InverseElement(int p, int value)
+    private long InverseElement(long p, long value)
     {
-      int d = 1, x = 0, a = value, b = p, q, y;
+      long d = 1, x = 0, a = value, b = p, q, y;
       while (a.CompareTo(0) == 1) 
       {
         q = b / a;
@@ -108,7 +108,7 @@ namespace CryptoWizard.Services
     /// <param name="y1">The first point</param>
     /// <param name="p">Mod</param>
     /// <returns>Return the point</returns>
-    private IEnumerable<int> GetPoint(int lambda, int x1, int x2, int y1, int p)
+    private IEnumerable<long> GetPoint(long lambda, long x1, long x2, long y1, long p)
     {
       var x3 = (lambda * lambda - x1 - x2) % p;
       if (x3 < 0)
@@ -120,12 +120,13 @@ namespace CryptoWizard.Services
       {
         y3 = (p + y3) % p;
       }
-      return new int[] { x3, y3 };
+      return new long[] { x3, y3 };
     }
 
     public IEnumerable<int> AdditionNeuralNetworkResult(int x1, int y1, int x2, int y2, double a, int p)
     {
-      return (x1 != x2) && (y1 != y2) ? CalculateIfPointsAreNotEqualNeuralNetwork(x1, y1, x2, y2, p) : CalculateIfPointsAreEqualNeuralNetwork(x1, y1, x2, y2, a, p);
+      return (x1 != x2) && (y1 != y2) ? CalculateIfPointsAreNotEqualNeuralNetwork(x1, y1, x2, y2, p) :
+                                        CalculateIfPointsAreEqualNeuralNetwork(x1, y1, x2, y2, a, p);
     }
 
     private IEnumerable<int> CalculateIfPointsAreEqualNeuralNetwork(int x1, int y1, int x2, int y2, double a, int p)
@@ -157,11 +158,11 @@ namespace CryptoWizard.Services
       var lambda2 = 2 * y1;
       if (lambda2 < 0)
       {
-        lambda2 = (-1) * InverseElement(p, (-1) * lambda2);
+        lambda2 = (int)((-1) * InverseElement(p, (-1) * lambda2));
       }
       else
       {
-        lambda2 = InverseElement(p, lambda2);
+        lambda2 = (int)(InverseElement(p, lambda2));
       }
       var lambda = (int)lambda1 * lambda2;
       lambda = (lambda < 0) ? (p + lambda) % p : lambda % p;
@@ -177,7 +178,7 @@ namespace CryptoWizard.Services
       var x_ = Convert.ToInt32(string.Join("", x3_), 2) % p;
       var yy = new BitArray(new int[] { x1 }).Xor(x3);
       var yyy = yy.Cast<bool>().Select(bit => bit ? 1 : 0).Reverse().SkipWhile(x => x == 0);
-      var yyyy = Convert.ToInt32(string.Join("", yyy), 2);
+      var yyyy = Convert.ToInt32(string.Join("", yyy.DefaultIfEmpty()), 2);
       var y3_ = new BitArray(new int[] { yyyy * lambda }).Cast<bool>().Select(bit => bit ? 1 : 0);
       lambda_ = 0;
       for (int i = 0, i1 = countW - 1; i < countW; i++, i1--)
@@ -220,11 +221,11 @@ namespace CryptoWizard.Services
       var lambda2 = x2 - x1;
       if (lambda2 < 0)
       {
-        lambda2 = (-1) * InverseElement(p, (-1) * lambda2);
+        lambda2 = (int)((-1) * InverseElement(p, (-1) * lambda2));
       }
       else
       {
-        lambda2 = InverseElement(p, lambda2);
+        lambda2 = (int)(InverseElement(p, lambda2));
       }
       var lambda = lambda1 * lambda2;
       lambda = (lambda < 0) ? (p + lambda) % p : lambda % p;
@@ -235,7 +236,7 @@ namespace CryptoWizard.Services
         lambda_ += k_.ElementAt(i) * _w[i1];
       }
       var x3 = mod.Xor(new BitArray(new int[] { lambda_ }).Xor(new BitArray(new int[] { x1 })).Xor(new BitArray(new int[] { x2 })));
-      var x3_ = x3.Cast<bool>().Select(bit => bit ? 1 : 0).Reverse().SkipWhile(x => x == 0);
+      var x3_ = x3.Cast<bool>().Select(bit => bit ? 1 : 0).Reverse().SkipWhile(x => x == 0).DefaultIfEmpty();
       var x_ = Convert.ToInt32(string.Join("", x3_), 2) % p;
       var yy = new BitArray(new int[] { x1 }).Xor(x3);
       var yyy = yy.Cast<bool>().Select(bit => bit ? 1 : 0).Reverse().SkipWhile(x => x == 0);
@@ -246,8 +247,9 @@ namespace CryptoWizard.Services
       {
         lambda_ += y3_.ElementAt(i) * _w[i1];
       }
-      var y = new BitArray(new int[] { lambda_ }).Xor(new BitArray(new int[] { y1 }));     
-      var y_ = Convert.ToInt32(string.Join("", y.Cast<bool>().Select(bit => bit ? 1 : 0).Reverse().SkipWhile(x => x == 0)), 2) % p;
+      var y = new BitArray(new int[] { lambda_ }).Xor(new BitArray(new int[] { y1 }));
+      var str = y.Cast<bool>().Select(bit => bit ? 1 : 0).Reverse().SkipWhile(x => x == 0).DefaultIfEmpty();
+      var y_ = Convert.ToInt32(string.Join("", str), 2) % p;
       return new int[] { x_ , y_ };
     }
   }

@@ -11,9 +11,9 @@ namespace CryptoWizard.Services
     /// <param name="y">The first point</param>
     /// <param name="p">Mod</param>
     /// <returns>Return the inverse point</returns>
-    public IEnumerable<int> InverseResult(int x, int y, int p)
+    public IEnumerable<long> InverseResult(long x, long y, long p)
     {
-      return new int[] { x, p - y };
+      return new long[] { x, p - y };
     }
   }
 }

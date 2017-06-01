@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -23,7 +24,7 @@ namespace CryptoWizard.Services
     /// <param name="a">Argument of equation</param>
     /// <param name="p">Mod</param>
     /// <returns>Return the pair of value EDS (r and s)</returns>
-    public IEnumerable<int> GenerateEDS(int x, int y, byte[] message, int privateKey, int N, int k, double a, int p)
+    public IEnumerable<long> GenerateEDS(long x, long y, byte[] message, long privateKey, long N, long k, double a, long p)
     {
       var n = GreatestPrimeDivisor(N);
       if (n != 0)
@@ -33,7 +34,7 @@ namespace CryptoWizard.Services
         var r = kG.ElementAt(0) % n;
         var z = InverseElement(n, k);
         var s = z * (e + privateKey * r) % n;
-        return new int[] { r, s };
+        return new long[] { r, s };
       }
       return null;
     }
@@ -50,7 +51,7 @@ namespace CryptoWizard.Services
     /// <param name="a">Argument of equation</param>
     /// <param name="p">Mod</param>
     /// <returns>Return true if EDS is authentic else false </returns>
-    public bool CheckEDS(int x, int y, int r, int s, byte[] message, int privateKey, int N, double a, int p)
+    public bool CheckEDS(long x, long y, long r, long s, byte[] message, long privateKey, long N, double a, long p)
     {
       var n = GreatestPrimeDivisor(N);
       if (n != 0)
@@ -64,7 +65,7 @@ namespace CryptoWizard.Services
           var u2 = (r * v) % n;
           var u1G = new Multiply().MultiplyResult(x, y, a, p, u1);
           var u2Q = new Multiply().MultiplyResult(Q.ElementAt(0), Q.ElementAt(1), a, p, u2);
-          var X = new Addition().AdditionResult(u1G.ElementAt(0), u1G.ElementAt(1), u2Q.ElementAt(0), u2Q.ElementAt(1), a, p);
+          var X = new Addition().AdditionResult(u1G.ElementAt(0), u1G.ElementAt(1), u2Q.ElementAt(0), u2Q.ElementAt(1), a, p); //AdditionResult
           return (r == X.ElementAt(0) % n) ? true : false;
         }
         else
@@ -79,7 +80,7 @@ namespace CryptoWizard.Services
     /// </summary>
     /// <param name="N">Order curve</param>
     /// <returns>Return greatest prime divisor</returns>
-    private int GreatestPrimeDivisor(int N)
+    private long GreatestPrimeDivisor(long N)
     {
       var result = 0;
       while (N % 2 == 0)
@@ -106,9 +107,9 @@ namespace CryptoWizard.Services
     /// <param name="p">Mod</param>
     /// <param name="value">Value</param>   
     /// <returns>Return inverse value</returns>
-    private int InverseElement(int p, int value)
+    private long InverseElement(long p, long value)
     {
-      int d = 1, x = 0, a = value, b = p, q, y;
+      long d = 1, x = 0, a = value, b = p, q, y;
       while (a.CompareTo(0) == 1)
       {
         q = b / a;
@@ -125,16 +126,16 @@ namespace CryptoWizard.Services
         x = (x + p) % p;
       }
       return (x < 0) ? (p + x) : x;
-    }    
+    }
     /// <summary>
     /// This method calculate hash
     /// </summary>
     /// <param name="message">Message</param>
     /// <param name="n">Mod</param>
-    /// <returns>Return integer value of hash</returns>
-    private int GetHash(byte[] message, int n)
+    /// <returns>Return BigInteger value of hash</returns>
+    private long GetHash(byte[] message, long n)
     {
-      var hash = BitConverter.ToInt32(new SHA1Managed().ComputeHash(message), 0);
+      var hash = BitConverter.ToInt64(new SHA1Managed().ComputeHash(message), 0);
       hash = (hash < 0) ? (n - hash) % n : hash % n;
       return (hash == 0) ? 1 : hash;
     }

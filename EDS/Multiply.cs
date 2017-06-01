@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Numerics;
 
 namespace CryptoWizard.Services
 {
@@ -13,17 +15,17 @@ namespace CryptoWizard.Services
     /// <param name="p">Mod</param>
     /// <param name="k">Coefficient which show how many multiply</param>
     /// <returns>Return result of addition</returns>
-    public IEnumerable<int> MultiplyResult(int x, int y, double a, int p, int k)
+    public IEnumerable<long> MultiplyResult(long x, long y, double a, long p, long k)
     {
       var _x = x;
       var _y = y;
-      var point = new int[2];
+      var point = new long[2];
       point[0] = x;
       point[1] = y;
       for (var i = 1; i < k; i++)
       {
-        point = (_x != point[0]) && (_y != point[1]) ? CalculateIfPointsAreNotEqual(_x, _y, point[0], point[1], p) : 
-                                                     CalculateIfPointsAreEqual(_x, _y, point[0], point[1], a, p);
+        point = (_x != point[0]) && (_y != point[1]) ? CalculateIfPointsAreNotEqual(_x, _y, point[0], point[1], p) :
+          CalculateIfPointsAreEqual(_x, _y, point[0], point[1], a, p);
       }
       return point;
     }
@@ -37,7 +39,7 @@ namespace CryptoWizard.Services
     /// <param name="a">Argument of equation</param>
     /// <param name="p">Mod</param>
     /// <returns>Return the point</returns>
-    private int[] CalculateIfPointsAreEqual(int x1, int y1, int x2, int y2, double a, int p)
+    private long[] CalculateIfPointsAreEqual(long x1, long y1, long x2, long y2, double a, long p)
     {
       var lambda1 = 3 * x1 * x1 + a;
       var lambda2 = 2 * y1;
@@ -51,7 +53,7 @@ namespace CryptoWizard.Services
       }
       var lambda = lambda1 * lambda2;
       lambda = (lambda < 0) ? (p + lambda) % p : lambda % p;
-      return GetPoint((int)lambda, x1, x2, y1, p);
+      return GetPoint((long)lambda, x1, x2, y1, p);
     }
     /// <summary>
     /// This method calculate the point if current points are not equal
@@ -62,7 +64,7 @@ namespace CryptoWizard.Services
     /// <param name="y2">The second point</param>
     /// <param name="p">Mod</param>
     /// <returns>Return the point</returns>
-    private int[] CalculateIfPointsAreNotEqual(int x1, int y1, int x2, int y2, int p)
+    private long[] CalculateIfPointsAreNotEqual(long x1, long y1, long x2, long y2, long p)
     {
       var lambda1 = y2 - y1;
       var lambda2 = x2 - x1;
@@ -84,9 +86,9 @@ namespace CryptoWizard.Services
     /// <param name="p">Mod</param>
     /// <param name="value">Value</param>   
     /// <returns>Return inverse value</returns>
-    private int InverseElement(int p, int value)
+    private long InverseElement(long p, long value)
     {
-      int d = 1, x = 0, a = value, b = p, q, y;
+      long d = 1, x = 0, a = value, b = p, q, y;
       while (a.CompareTo(0) == 1)
       {
         q = b / a;
@@ -113,7 +115,7 @@ namespace CryptoWizard.Services
     /// <param name="y1">The first point</param>
     /// <param name="p">Mod</param>
     /// <returns>Return the point</returns>
-    private int[] GetPoint(int lambda, int x1, int x2, int y1, int p)
+    private long[] GetPoint(long lambda, long x1, long x2, long y1, long p)
     {
       var x3 = (lambda * lambda - x1 - x2) % p;
       if (x3 < 0)
@@ -125,7 +127,7 @@ namespace CryptoWizard.Services
       {
         y3 = (p + y3) % p;
       }
-      return new int[] { x3, y3 };
+      return new long[] { x3, y3 };
     }
   }
 }

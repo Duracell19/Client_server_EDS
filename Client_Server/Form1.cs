@@ -3,11 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -22,7 +24,6 @@ namespace Client_Server
     private StreamWriter STW;
     private string receive;
     private string text_to_send;
-    private int private_key = 12;
 
     public Form1()
     {
@@ -58,12 +59,19 @@ namespace Client_Server
         try
         {
           receive = STR.ReadLine();
-          var result = receive.Split(',');
-          var sr = new StreamReader(result[2]);
-          var data = sr.ReadToEnd();
-          sr.Close();
-          var r = receive.Split(',').Select(item => int.Parse(item));
-          var res = EDS.CheckEDS(416, 55, r.ElementAt(0), r.ElementAt(1), Encoding.UTF8.GetBytes(data), private_key, 728, -1, 751);
+          var data = receive.Split(',');
+
+          var privateKey = data.ElementAt(2);
+
+          long numOfBytes = data.Last().Length / 8;
+          var bytes = new byte[numOfBytes];
+          for (int i = 0; i < numOfBytes; i++)
+          {
+            bytes[i] = Convert.ToByte(data.Last().Substring(8 * i, 8), 2);
+          }
+
+          var res = EDS.CheckEDS(416, 55, Convert.ToInt64(data.ElementAt(0)), Convert.ToInt64(data.ElementAt(1)), bytes, Convert.ToInt64(privateKey), 728, -1, 751);
+
           if (res)
           {
             receive = "EDS is confirmed!";
@@ -88,7 +96,7 @@ namespace Client_Server
       if(client.Connected)
       {
         STW.WriteLine(text_to_send);
-        this.textBox2.Invoke(new MethodInvoker(delegate() { textBox2.AppendText("me: " + text_to_send + "\n"); }));
+        this.textBox2.Invoke(new MethodInvoker(delegate() { textBox2.AppendText("me: Data was sending" + "\n"); }));
 
       }
       else
@@ -125,7 +133,15 @@ namespace Client_Server
 
     private void button1_Click(object sender, EventArgs e) //Send button
     {
-      if(textBox1.Text != "")
+    //  var sWatch = new Stopwatch();
+    //  sWatch.Start();
+
+    //  var res = new Addition().AdditionResult(41, 55, 416, 55, -1, 751);
+
+    //  sWatch.Stop();
+    //  var time = sWatch.ElapsedMilliseconds.ToString();
+
+      if (textBox1.Text != "")
       {
         text_to_send = textBox1.Text;
       }
@@ -133,19 +149,16 @@ namespace Client_Server
     }
 
     private void button4_Click(object sender, EventArgs e)
-    {
+    {      
       if (openFileDialog1.ShowDialog() == DialogResult.OK)
       {
-        var sr = new StreamReader(openFileDialog1.FileName);
-        var data = sr.ReadToEnd();
-        sr.Close();
-        var add = new ElectronicDigitalSignature();
-        var rand = new Random();
-        var result = EDS.GenerateEDS(416, 55, Encoding.UTF8.GetBytes(data), private_key, 728, 5, -1, 751); 
-
-        text_to_send = string.Join(",", result.ToArray());
-        text_to_send += "," + openFileDialog1.FileName; //we have to send data, not file Name!!!
-        MessageBox.Show("File was loaded!");
+        var bytes = File.ReadAllBytes(openFileDialog1.FileName);
+        var data = string.Join("", bytes.Select(b => Convert.ToString(b, 2).PadLeft(8, '0')));
+        var k = new Random().Next(1, 11);
+        var privateKey = 12;
+        var result = EDS.GenerateEDS(416, 55, bytes, privateKey, 728, k, -1, 751);
+        text_to_send = string.Format("{0},{1},{2},{3}", result.ElementAt(0), result.ElementAt(1), privateKey, data);
+        MessageBox.Show("File was loaded!");        
       }
     }
   }
